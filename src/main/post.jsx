@@ -1,8 +1,52 @@
 import React, { useState } from "react";
 import { RxCross1 } from "react-icons/rx";
+import { addPost, editPost, deletePost } from "../config/store";
+import { useDispatch, useSelector } from "react-redux";
 
 const Post = ({ image }) => {
   const [showOverlay, setShowOverlay] = useState(false);
+  const [postText, setPostsText] = useState("");
+  const [editingPostId, setEditingPostId] = useState(null);
+
+  const posts = useSelector((state) => state.posts);
+  const dispatch = useDispatch();
+
+  const handleSubmitChange = (e) => {
+    setPostsText(e.target.value);
+  };
+
+  const postSubmit = () => {
+    if (!postText.trim()) return;
+
+    if (editingPostId !== null) {
+      dispatch(
+        editPost({
+          id: editingPostId,
+          text: postText,
+        })
+      );
+      setEditingPostId(null);
+    } else {
+      dispatch(
+        addPost({
+          id: Date.now,
+          text: postText,
+          timeStamp: new Date.toLocaleString(),
+        })
+      );
+    }
+    setPostsText("");
+    setShowOverlay(false);
+  };
+  const handleEditPost = (post) => {
+    setPostsText(post.text);
+    setEditingPostId(post.id);
+    setShowOverlay(true);
+  };
+
+  const handleDeletePost = (postId) => {
+    dispatch(deletePost(postId));
+  };
   return (
     <div className="px-4 md:px-20 lg:px-28">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -45,7 +89,9 @@ const Post = ({ image }) => {
       {showOverlay && (
         <div className="fixed inset-0 bg-black opacity-80 flex justify-center items-center z-50">
           <div className="bg-white relative rounded-lg w-1/2 p-3">
-            <div className="text-center font-bold">Create Post</div>
+            <div className="text-center text-xl font-extrabold">
+              Create Post
+            </div>
             <div className="absolute top-[7px] cursor-pointer">
               <RxCross1 onClick={() => setShowOverlay(false)} />
             </div>
