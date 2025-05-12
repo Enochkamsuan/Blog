@@ -1,8 +1,16 @@
 import { configureStore, createSlice } from "@reduxjs/toolkit";
 
+const loadState = () => {
+  try {
+    const savedItem = localStorage.getItem("posts");
+    return savedItem ? JSON.parse(savedItem) : [];
+  } catch (e) {
+    return [];
+  }
+};
 const postSlice = createSlice({
   name: "posts",
-  initialState: [],
+  initialState: loadState(),
   reducers: {
     addPost: (state, action) => {
       state.push(action.payload);
@@ -23,7 +31,13 @@ const postSlice = createSlice({
 export const { addPost, editPost, deletePost } = postSlice.actions;
 
 const store = configureStore({
-  posts: postSlice.reducer,
+  reducer: {
+    posts: postSlice.reducer,
+  },
+});
+
+store.subscribe(() => {
+  localStorage.setItem("posts", JSON.stringify(store.getState().posts));
 });
 
 export default store;
